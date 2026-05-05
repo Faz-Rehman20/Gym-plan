@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Gym Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --text: #f0f0f0;
+    --muted: #888;
+    --purple: #a78bfa;
+    --teal: #2dd4bf;
+    --coral: #fb923c;
+    --blue: #60a5fa;
+    --yt: #ff4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding-bottom: 2rem; }
+  header { padding: 1.5rem 1rem 1rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; background: var(--bg); }
+  header h1 { font-family: 'DM Mono', monospace; font-size: 1rem; font-weight: 500; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; }
+  header p { font-size: 0.75rem; color: #555; margin-top: 2px; font-family: 'DM Mono', monospace; }
+  .day-nav { display: flex; overflow-x: auto; gap: 6px; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); scrollbar-width: none; background: var(--bg); position: sticky; top: 69px; z-index: 10; }
+  .day-nav::-webkit-scrollbar { display: none; }
+  .day-btn { flex-shrink: 0; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border); background: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.75rem; cursor: pointer; transition: all 0.15s; }
+  .day-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 500; }
+  .content { padding: 1rem; }
+  .day-meta { margin-bottom: 1.25rem; }
+  .day-title { font-size: 1.4rem; font-weight: 700; line-height: 1.2; }
+  .day-focus { font-size: 0.8rem; font-family: 'DM Mono', monospace; color: var(--muted); margin-top: 4px; letter-spacing: 0.04em; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.7rem; font-family: 'DM Mono', monospace; font-weight: 500; letter-spacing: 0.06em; margin-bottom: 0.6rem; }
+  .badge-strength { background: rgba(167,139,250,0.15); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+  .badge-cardio { background: rgba(45,212,191,0.12); color: var(--teal); border: 1px solid rgba(45,212,191,0.3); }
+  .badge-rest { background: rgba(136,136,136,0.12); color: var(--muted); border: 1px solid rgba(136,136,136,0.3); }
+  .badge-full { background: rgba(251,146,60,0.12); color: var(--coral); border: 1px solid rgba(251,146,60,0.3); }
+  .exercise-list { display: flex; flex-direction: column; gap: 10px; }
+  .exercise-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 0.875rem 1rem; }
+  .ex-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .ex-left { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
+  .ex-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ex-name { font-size: 0.95rem; font-weight: 500; line-height: 1.3; }
+  .yt-link { display: inline-flex; align-items: center; gap: 3px; font-size: 0.65rem; font-family: 'DM Mono', monospace; color: var(--yt); background: rgba(255,68,68,0.1); border: 1px solid rgba(255,68,68,0.25); border-radius: 5px; padding: 2px 7px; text-decoration: none; white-space: nowrap; flex-shrink: 0; }
+  .ex-weight { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--blue); background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.2); padding: 3px 8px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; align-self: flex-start; }
+  .ex-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted); background: var(--surface2); border-radius: 6px; padding: 2px 8px; border: 1px solid var(--border); }
+  .ex-note { font-size: 0.75rem; color: #666; margin-top: 6px; line-height: 1.4; font-style: italic; }
+  .tip-box { margin-top: 1.25rem; background: var(--surface); border-left: 3px solid var(--teal); border-radius: 0 10px 10px 0; padding: 0.75rem 1rem; font-size: 0.82rem; color: #aaa; line-height: 1.55; }
+  .tip-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--teal); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .rest-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; text-align: center; gap: 0.75rem; }
+  .rest-icon { font-size: 2.5rem; opacity: 0.3; }
+  .rest-title { font-size: 1.2rem; font-weight: 700; }
+  .rest-sub { font-size: 0.82rem; color: var(--muted); line-height: 1.5; max-width: 260px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>My Gym Plan</h1>
+  <p>Week 1 · Beginner · 4–5 days/week</p>
+</header>
+<div class="day-nav" id="dayNav"></div>
+<div class="content" id="content"></div>
+<script>
+const days = [
+  {
+    label:"Mon", title:"Upper body — push", badge:"Strength", badgeClass:"badge-strength",
+    focus:"Chest · Shoulders · Triceps",
+    tip:"Rest 90s between sets. Focus on feeling the muscle, not just moving the weight.",
+    exercises:[
+      {name:"Chest press machine", sets:"3", reps:"10–12", kg:"20–25 kg", note:"Slow on the way back", yt:"https://www.youtube.com/watch?v=sqNwDkUU_Ps"},
+      {name:"Shoulder press machine", sets:"3", reps:"10–12", kg:"10–15 kg", note:"Don't lock elbows at the top", yt:"https://www.youtube.com/watch?v=TnhIyp4kmO8"},
+      {name:"Cable chest fly", sets:"3", reps:"12–15", kg:"5–7.5 kg / side", note:"Wide arc, keep chest up", yt:"https://www.youtube.com/watch?v=ETtXO4FW1EU"},
+      {name:"Tricep pushdown (cable)", sets:"3", reps:"12–15", kg:"10–12.5 kg", note:"Elbows stay tucked in", yt:"https://www.youtube.com/watch?v=_w-HpW70nSQ"},
+      {name:"Treadmill", sets:"1", reps:"10 min", kg:"—", note:"Brisk walk to finish", yt:null},
+    ]
+  },
+  {
+    label:"Tue", title:"Lower body + core", badge:"Strength", badgeClass:"badge-strength",
+    focus:"Quads · Hamstrings · Glutes · Abs",
+    tip:"Legs drive the most calorie burn. This session does the most to shift belly fat.",
+    exercises:[
+      {name:"Leg press machine", sets:"3", reps:"10–12", kg:"40–50 kg", note:"Feet shoulder-width, don't lock knees", yt:"https://www.youtube.com/watch?v=p5dCqF7wWUw"},
+      {name:"Leg extension machine", sets:"3", reps:"12–15", kg:"20–25 kg", note:"Controlled — slow on the way down", yt:"https://www.youtube.com/watch?v=YyvSfVjQeL0"},
+      {name:"Leg curl machine", sets:"3", reps:"12–15", kg:"15–20 kg", note:"Full range of motion", yt:"https://www.youtube.com/watch?v=1Tq3QdYUuHs"},
+      {name:"Hip abductor machine", sets:"3", reps:"15", kg:"20–30 kg", note:"Sit upright — don't lean forward", yt:"https://www.youtube.com/watch?v=OjI5OpV6IWA"},
+      {name:"Ab crunch machine", sets:"3", reps:"15–20", kg:"10–15 kg", note:"Breathe out on the crunch", yt:"https://www.youtube.com/watch?v=3qjoXDTuyOE"},
+      {name:"Plank", sets:"3", reps:"20–30 sec", kg:"—", note:"Build up time over weeks", yt:null},
+    ]
+  },
+  {
+    label:"Wed", title:"Cardio + recovery", badge:"Cardio", badgeClass:"badge-cardio",
+    focus:"Stamina focus · Active recovery",
+    tip:"Keep heart rate ~130–150 bpm. You should be able to hold a short conversation.",
+    exercises:[
+      {name:"Treadmill incline walk", sets:"1", reps:"20 min", kg:"—", note:"Incline 4–6, speed 5–6 km/h", yt:null},
+      {name:"Stationary bike", sets:"1", reps:"15 min", kg:"—", note:"Moderate resistance", yt:null},
+      {name:"Rowing machine", sets:"1", reps:"10 min", kg:"—", note:"Full body — great for stamina", yt:"https://www.youtube.com/watch?v=H0r_D6jEI6k"},
+      {name:"Stretching", sets:"1", reps:"10 min", kg:"—", note:"Hip flexors, hamstrings, chest", yt:null},
+    ]
+  },
+  {
+    label:"Thu", title:"Upper body — pull", badge:"Strength", badgeClass:"badge-strength",
+    focus:"Back · Biceps",
+    tip:"Pull movements build the back taper that makes you look muscular even in a t-shirt.",
+    exercises:[
+      {name:"Lat pulldown machine", sets:"3", reps:"10–12", kg:"25–30 kg", note:"Pull to upper chest, don't swing", yt:"https://www.youtube.com/watch?v=6MLs17iyK9I"},
+      {name:"Seated cable row", sets:"3", reps:"10–12", kg:"20–25 kg", note:"Squeeze shoulder blades together", yt:"https://www.youtube.com/watch?v=vwHG9Jfu4sw"},
+      {name:"Assisted pull-up machine", sets:"3", reps:"8–10", kg:"~40–50 kg counterweight", note:"Lower slowly — the drop is where gains happen", yt:"https://www.youtube.com/watch?v=lGCl8kVa6-c"},
+      {name:"Bicep curl machine", sets:"3", reps:"12–15", kg:"10–15 kg", note:"Full range, no swinging", yt:null},
+      {name:"Face pulls (cable)", sets:"3", reps:"15", kg:"7.5–10 kg", note:"Elbows high — great for posture", yt:"https://www.youtube.com/watch?v=0Po47vvj9g4"},
+    ]
+  },
+  {
+    label:"Fri", title:"Full body + burn", badge:"Full body", badgeClass:"badge-full",
+    focus:"Compound moves · Core",
+    tip:"End of the week — push a little. Compound moves spike calorie burn into the weekend.",
+    exercises:[
+      {name:"Smith machine squat", sets:"3", reps:"10–12", kg:"20–30 kg (bar only to start)", note:"Go to parallel or below", yt:"https://www.youtube.com/watch?v=yoP29LtTdnQ"},
+      {name:"Chest press machine", sets:"3", reps:"10–12", kg:"Same as Monday", note:"", yt:"https://www.youtube.com/watch?v=sqNwDkUU_Ps"},
+      {name:"Lat pulldown", sets:"3", reps:"10–12", kg:"Same as Thursday", note:"", yt:"https://www.youtube.com/watch?v=6MLs17iyK9I"},
+      {name:"Cable crunch", sets:"3", reps:"15–20", kg:"10–15 kg", note:"Hips stay locked — abs do the work", yt:"https://www.youtube.com/watch?v=AV5PmZJIrrw"},
+      {name:"Sprint intervals (treadmill)", sets:"1", reps:"12 min", kg:"—", note:"1 min fast / 1 min walk × 6", yt:null},
+    ]
+  },
+  {
+    label:"Sat", title:"Optional cardio", badge:"Cardio", badgeClass:"badge-cardio",
+    focus:"Active rest · Your choice",
+    tip:"Listen to your body this first month. Even a 30-min walk counts. Don't skip rest if sore.",
+    exercises:[
+      {name:"Treadmill / bike / swim", sets:"1", reps:"20–30 min", kg:"—", note:"Low intensity — stay moving", yt:null},
+      {name:"Stretching", sets:"1", reps:"10 min", kg:"—", note:"", yt:null},
+    ]
+  },
+  {
+    label:"Sun", title:"Rest day", badge:"Rest", badgeClass:"badge-rest",
+    focus:"Recovery", tip:"", rest:true
+  }
+];
+
+let active = 0;
+const nav = document.getElementById('dayNav');
+const content = document.getElementById('content');
+
+days.forEach((d,i) => {
+  const btn = document.createElement('button');
+  btn.className = 'day-btn' + (i===0?' active':'');
+  btn.textContent = d.label;
+  btn.onclick = () => {
+    active = i;
+    nav.querySelectorAll('.day-btn').forEach((b,j) => b.className='day-btn'+(j===i?' active':''));
+    render();
+  };
+  nav.appendChild(btn);
+});
+
+function render() {
+  const d = days[active];
+  if (d.rest) {
+    content.innerHTML = `<div class="rest-screen"><div class="rest-icon">💤</div><div class="rest-title">Rest day</div><div class="rest-sub">Muscles grow during recovery, not just training.<br>Sleep well, eat protein, come back stronger.</div></div>`;
+    return;
+  }
+  content.innerHTML = `
+    <div class="day-meta">
+      <div class="badge ${d.badgeClass}">${d.badge.toUpperCase()}</div>
+      <div class="day-title">${d.title}</div>
+      <div class="day-focus">${d.focus}</div>
+    </div>
+    <div class="exercise-list">
+      ${d.exercises.map(e=>`
+        <div class="exercise-card">
+          <div class="ex-top">
+            <div class="ex-left">
+              <div class="ex-name-row">
+                <div class="ex-name">${e.name}</div>
+                ${e.yt?`<a class="yt-link" href="${e.yt}" target="_blank">▶ tutorial</a>`:''}
+              </div>
+              <div class="ex-pills">
+                <span class="pill">${e.sets} sets</span>
+                <span class="pill">${e.reps} reps</span>
+                ${e.kg==='—'?`<span class="pill">no weight</span>`:''}
+              </div>
+            </div>
+            ${e.kg!=='—'?`<div class="ex-weight">${e.kg}</div>`:''}
+          </div>
+          ${e.note?`<div class="ex-note">${e.note}</div>`:''}
+        </div>`).join('')}
+    </div>
+    ${d.tip?`<div class="tip-box"><div class="tip-label">Coach tip</div>${d.tip}</div>`:''}`;
+}
+render();
+</script>
+</body>
+</html>
